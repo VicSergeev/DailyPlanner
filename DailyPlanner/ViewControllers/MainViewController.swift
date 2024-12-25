@@ -7,47 +7,22 @@
 
 import UIKit
 
-/// Main view controller managing both calendar and time slots display
-/// Features:
-/// - Monthly calendar view at the top
-/// - Time slots table view below
-/// - Navigation between months
-/// - Day selection
 final class MainViewController: UIViewController {
     
     // MARK: - IBOutlets
-    
-    /// Collection view displaying the calendar
+
     @IBOutlet weak var collectionView: UICollectionView!
-    
-    /// Label showing current month and year
     @IBOutlet weak var monthLabel: UILabel!
-    
-    /// Table view displaying time slots
     @IBOutlet weak var tableView: UITableView!
     
     // MARK: - Properties
     
-    /// Currently selected date in the calendar
     var selectedDate = Date()
-    
-    /// Array of strings representing days in the calendar
-    /// Empty strings are used for padding at start/end of month
     var totalDaysInCalendar = [String]()
-    
-    /// Currently selected day number
     var selectedDay: Int?
-    
-    /// Reference to the actual current date
     var currentDate = Date()
-    
-    /// Array of formatted time slots (e.g., ["00:00-01:00", "01:00-02:00", ...])
     var timeSlots: [String] = []
-    
-    /// All tasks in the planner
     var allTasks: [Task] = []
-    
-    /// Tasks for the currently selected date
     var tasksForSelectedDate: [Task] = []
     
     // MARK: - Lifecycle Methods
@@ -56,13 +31,11 @@ final class MainViewController: UIViewController {
         super.viewDidLoad()
         setupUI()
         setupTimeSlots()
-        loadTasks() // Load initial tasks
-        
-        // Register cells
+        loadTasks()
+
         collectionView.register(CalendarCell.self, forCellWithReuseIdentifier: "CalendarCell")
         tableView.register(TaskTableViewCell.nib(), forCellReuseIdentifier: TaskTableViewCell.identifier)
         
-        // Set delegates
         collectionView.dataSource = self
         collectionView.delegate = self
         tableView.dataSource = self
@@ -70,15 +43,12 @@ final class MainViewController: UIViewController {
     }
     
     // MARK: - Calendar Navigation
-    
-    /// Moves to the next month in the calendar
     @IBAction func nextMonth(_ sender: Any) {
         selectedDate = CalendarHandler().increaseMonth(date: selectedDate)
         adjustSelectedDayForNewMonth()
         setMonthView()
     }
     
-    /// Moves to the previous month in the calendar
     @IBAction func previousMonth(_ sender: Any) {
         selectedDate = CalendarHandler().decreaseMonth(date: selectedDate)
         adjustSelectedDayForNewMonth()
@@ -92,8 +62,6 @@ final class MainViewController: UIViewController {
 
 // MARK: - Setup Methods
 extension MainViewController {
-    
-    /// Initial setup of the UI components
     func setupUI() {
         setupCells()
         setupTableView()
@@ -102,7 +70,6 @@ extension MainViewController {
         setMonthView()
     }
     
-    /// Configures collection view cell sizes
     func setupCells() {
         let layout = UICollectionViewFlowLayout()
         
@@ -118,14 +85,11 @@ extension MainViewController {
         
         collectionView.collectionViewLayout = layout
     }
-    
-    /// Sets up the table view
+
     func setupTableView() {
         tableView.separatorStyle = .none
     }
-    
-    /// Creates 24 time slots for a day
-    /// Format: "HH:00-HH:00" (e.g., "00:00-01:00")
+
     func setupTimeSlots() {
         timeSlots.removeAll()
         for hour in 0..<24 {
@@ -134,8 +98,7 @@ extension MainViewController {
             timeSlots.append("\(startHour)-\(endHour)")
         }
     }
-    
-    /// Updates the calendar view for the selected month
+
     func setMonthView() {
         totalDaysInCalendar.removeAll()
         
@@ -159,31 +122,27 @@ extension MainViewController {
         updateTasksForSelectedDate()
     }
     
-    /// Load tasks from service
     func loadTasks() {
         allTasks = TaskService.shared.tasks
         updateTasksForSelectedDate()
     }
     
-    /// Update tasks for the selected date
     func updateTasksForSelectedDate() {
         tasksForSelectedDate = TaskService.shared.getTasksForDate(selectedDate)
         print("Tasks for selected date (\(selectedDate)): \(tasksForSelectedDate.count)")  // Debug print
         tableView.reloadData()
     }
     
-    /// Adjusts the selected day when switching months to handle cases where the current
-    /// selected day might not exist in the new month (e.g., 31st when switching to February)
     private func adjustSelectedDayForNewMonth() {
         guard let selectedDay = selectedDay else { return }
         
         let daysInNewMonth = CalendarHandler().daysInMonth(date: selectedDate)
         
         if selectedDay > daysInNewMonth {
-            // If selected day doesn't exist in new month, select the last day
+            // if selected day doesn't exist in new month, select the last day
             self.selectedDay = daysInNewMonth
             
-            // Update selectedDate to the last day of the new month
+            // update selectedDate to the last day of the new month
             var components = Calendar.current.dateComponents([.year, .month], from: selectedDate)
             components.day = daysInNewMonth
             if let newDate = Calendar.current.date(from: components) {
@@ -205,15 +164,12 @@ extension MainViewController: UICollectionViewDataSource, UICollectionViewDelega
         
         cell.dayOfMonthLabel.text = totalDaysInCalendar[indexPath.item]
         
-        // Reset cell appearance for reuse
         cell.backgroundColor = .clear
         cell.dayOfMonthLabel.textColor = UIColor.black
-        
-        // Make cell circular
+
         cell.layer.cornerRadius = cell.frame.width / 2
         cell.clipsToBounds = true
         
-        // highlight current day if we're viewing the current month and year
         if let day = Int(totalDaysInCalendar[indexPath.item]),
            CalendarHandler().monthString(date: selectedDate) == CalendarHandler().monthString(date: currentDate),
            CalendarHandler().yearString(date: selectedDate) == CalendarHandler().yearString(date: currentDate),
@@ -237,7 +193,6 @@ extension MainViewController: UICollectionViewDataSource, UICollectionViewDelega
         if let day = Int(totalDaysInCalendar[indexPath.item]) {
             selectedDay = day
             
-            // Update selected date with the correct day
             var components = Calendar.current.dateComponents([.year, .month], from: selectedDate)
             components.day = day
             if let newDate = Calendar.current.date(from: components) {
@@ -262,8 +217,7 @@ extension MainViewController: UITableViewDataSource {
         }
         
         let timeSlot = timeSlots[indexPath.row]
-        
-        // Find task for this time slot if exists
+
         let task = tasksForSelectedDate.first { task in
             let taskDate = Date(timeIntervalSince1970: task.dateStart)
             let taskHour = Calendar.current.component(.hour, from: taskDate)
@@ -271,7 +225,13 @@ extension MainViewController: UITableViewDataSource {
         }
         
         cell.configure(with: timeSlot)
-        cell.taskLabel.text = task?.name ?? ""
+        if let task = task {
+            cell.taskNameLabel.numberOfLines = 0
+            cell.taskNameLabel.text = "\(task.name)"
+            cell.taskDescriptionLabel.text = "\(task.description)"
+        } else {
+            cell.taskNameLabel.text = ""
+        }
         
         return cell
     }
@@ -280,6 +240,10 @@ extension MainViewController: UITableViewDataSource {
 // MARK: - UITableViewDelegate
 extension MainViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        return UITableView.automaticDimension
+    }
+    
+    func tableView(_ tableView: UITableView, estimatedHeightForRowAt indexPath: IndexPath) -> CGFloat {
         return 60
     }
 }

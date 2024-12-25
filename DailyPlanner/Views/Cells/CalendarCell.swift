@@ -8,8 +8,7 @@
 import UIKit
 
 final class CalendarCell: UICollectionViewCell {
-    
-    // Label to display the day of month number
+
     var dayOfMonthLabel: UILabel!
     
     override init(frame: CGRect) {
@@ -23,13 +22,11 @@ final class CalendarCell: UICollectionViewCell {
     }
     
     private func setupUI() {
-        // Create and configure label
         dayOfMonthLabel = UILabel()
         dayOfMonthLabel.textAlignment = .center
         dayOfMonthLabel.translatesAutoresizingMaskIntoConstraints = false
         contentView.addSubview(dayOfMonthLabel)
-        
-        // Add constraints
+
         NSLayoutConstraint.activate([
             dayOfMonthLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
             dayOfMonthLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),

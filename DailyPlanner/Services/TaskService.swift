@@ -1,39 +1,29 @@
-// TaskService.swift - Service layer for managing tasks in the Daily Planner
+// TaskService.swift
 //
 // Created by Vic on 19.12.2024.
 //
 
 import Foundation
 
-/// Service class responsible for managing tasks in the application
-/// Implements Singleton pattern for centralized task management
-class TaskService {
-    /// Shared instance of TaskService (Singleton)
+final class TaskService {
+    
     static let shared = TaskService()
     
-    /// Private initializer to enforce Singleton pattern
-    /// Sets up initial mock data
     private init() {
         setupMockTasks()
     }
     
-    /// Array storing all tasks
-    /// Private(set) allows reading from outside but modification only within the service
     private(set) var tasks: [Task] = []
     
-    /// Sets up mock tasks for testing and development
-    /// Creates sample tasks for the current day
     private func setupMockTasks() {
-        // Create tasks for today (19.12.2024)
+        // MARK: - tasks for 19.12.2024
         let calendar = Calendar.current
         var dateComponents = DateComponents()
         dateComponents.year = 2024
         dateComponents.month = 12
         dateComponents.day = 19
         
-        // Today's tasks
-        if let todayDate = calendar.date(from: dateComponents) {
-            // Morning task (9:00 - 10:00)
+        if calendar.date(from: dateComponents) != nil {
             dateComponents.hour = 9
             dateComponents.minute = 0
             if let startTime = calendar.date(from: dateComponents)?.timeIntervalSince1970 {
@@ -42,12 +32,12 @@ class TaskService {
                     tasks.append(Task(id: 1,
                                     dateStart: startTime,
                                     dateFinish: endTime,
-                                    name: "Morning Meeting",
-                                    description: "Daily standup with the team"))
+                                    name: "дело1",
+                                    description: "описание"))
                 }
             }
             
-            // Afternoon task (14:00 - 15:30)
+            // second task
             dateComponents.hour = 14
             dateComponents.minute = 0
             if let startTime = calendar.date(from: dateComponents)?.timeIntervalSince1970 {
@@ -57,19 +47,17 @@ class TaskService {
                     tasks.append(Task(id: 2,
                                     dateStart: startTime,
                                     dateFinish: endTime,
-                                    name: "Project Review",
-                                    description: "Review project milestones and progress"))
+                                    name: "длео2",
+                                    description: "описание"))
                 }
             }
         }
-        
-        // Tomorrow's tasks (20.12.2024)
+
         dateComponents.day = 20
         dateComponents.hour = 0
         dateComponents.minute = 0
         
-        if let tomorrowDate = calendar.date(from: dateComponents) {
-            // Morning task (11:00 - 12:00)
+        if calendar.date(from: dateComponents) != nil {
             dateComponents.hour = 11
             if let startTime = calendar.date(from: dateComponents)?.timeIntervalSince1970 {
                 dateComponents.hour = 12
@@ -77,12 +65,12 @@ class TaskService {
                     tasks.append(Task(id: 3,
                                     dateStart: startTime,
                                     dateFinish: endTime,
-                                    name: "Client Meeting",
-                                    description: "Discuss project requirements with the client"))
+                                    name: "Вечернее дело",
+                                    description: "описание вечернего дела"))
                 }
             }
             
-            // Evening task (16:00 - 17:00)
+            // third task
             dateComponents.hour = 16
             if let startTime = calendar.date(from: dateComponents)?.timeIntervalSince1970 {
                 dateComponents.hour = 17
@@ -90,16 +78,13 @@ class TaskService {
                     tasks.append(Task(id: 4,
                                     dateStart: startTime,
                                     dateFinish: endTime,
-                                    name: "Team Building",
-                                    description: "Virtual team building activity"))
+                                    name: "Вечернее дело2",
+                                    description: "описание"))
                 }
             }
         }
     }
     
-    /// Retrieves tasks scheduled for a specific date
-    /// - Parameter date: Date for which tasks are to be retrieved
-    /// - Returns: Array of tasks scheduled for the specified date
     func getTasksForDate(_ date: Date) -> [Task] {
         let calendar = Calendar.current
         return tasks.filter { task in
@@ -108,14 +93,10 @@ class TaskService {
         }
     }
     
-    /// Adds a new task to the task list
-    /// - Parameter task: Task to be added
     func addTask(_ task: Task) {
         tasks.append(task)
     }
     
-    /// Removes a task with the specified ID from the task list
-    /// - Parameter id: ID of the task to be removed
     func removeTask(withId id: Int) {
         tasks.removeAll { $0.id == id }
     }
